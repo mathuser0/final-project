@@ -1,0 +1,42 @@
+# Config file for automatic testing at travis-ci.org
+
+language: python
+dist: xenial
+python:
+  - 3.7
+
+before_install:
+- echo -e "machine github.com\n  login $CI_USER_TOKEN" > ~/.netrc
+
+install:
+- pip install pipenv
+- pipenv install --system --deploy --ignore-pipfile
+
+stages:
+  - test
+  - name: answers
+    if: branch = master
+
+jobs:
+  include:
+    - stage: test
+      script: pytest -v
+      install:
+        - pipenv install --dev --ignore-pipfile --deploy
+      before_script: # code coverage tool
+         - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+         - chmod +x ./cc-test-reporter
+         - ./cc-test-reporter before-build
+      script: pytest --cov-report xml --cov-report term
+      after_script:
+        - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
+    - stage: answers
+      script:
+      - python3 -m final_project
+#
+#env:
+#  global:
+#  - secure: MC76TGGubHomZNhA4KO8Dw8ldkgyyKCNsO6zdTh+trihqzXgjC0JDNsxAAPLU3+Yk18puhUlKL7J8Y6fpB26i5nA8bIh8NBRdALDmg55iuVQW72tffT6c0T/28YxsKcDXessdRocmNKF0QCCfDSBlqwp2HYzKZPJfrF71zdNaLCu363ejcI8pS4F5JJIYSGY38tVU9+MVVVf3u4SgAFCY4ojA6YCHbrAx94wslVmXwjnX8tehYbfNB367U4ixsGhKdAFdNy831uMlSOX02zcovRS4V7/dB/oPdFDaOh6xVYb7M7HbGtz/skZA/wFky1HykuLcP7x8V+J2KPKfdNUG7zrpMoqIPDWifFJRpVwd/W6qipl7xBR8OoUvhxhdZc+4Cqbeuc1SOYTir7/aIZZIGsHSzpScMl5BRIhqa/N2/oq11NURW9SWdMTGs4ttcdQyIPmfH+BI1oGT8EP0kPPdvmu+OUmvSONygdkMn654eU6OEmtH0K9mnIq/RrQlv1wJbhx06h9ndIUpqmrOQ+pAnW9dN2YNR5yY1VY0iQm3dlgLdgxf1jkFau1eG0SiEdJVCQJN83hcghL8zYlZ1RpEmYLSqpxRa8KvPK5CEYOe6Scp5gsg7YnJDsETKGuQvZTnJyvFIxhGMLLbbhjasMnHostpaOpGOtkS0f6Yxs1Fc4=
+#  - secure: JWzqq2wzr2yd/MljVBIQ/oikGatIx9EvEANlSCzok5FimHZ/Mch3mBb3YgbAQZlqgUKCew3jIMrkdOR6FM37TN+2m1vM6UivW5Mq+03WYV5ctwruWR8rtKifRIxCHlDEZmpAA/zJTgTD9zHJzVZEseWctiLfwLcV0cp3qbBLvfjtd03w5YbSEs9mB7lKdQmcrYJg8BObSX9FhY3/5TOwZOAdJZCNjpivXXyH3466YEIOSHbnPToK9yEyIs/YfVn1rfkn/1pahqkkAIoqSh3uUusaIucue1IHqfpLjze2lQyv5ACEqIV0liJX+sz3OsEd8/tfPNzXfH/zorl/wXC3dSQKmS3ngsZK4SVZLlWHSWjXu7x0eak+vYiFf3Zxfs0ruNNE3tn5tT9tu1qM6jcstOijO6YP3DKk3540xQhwpzClsihUXMiR9E78+C4PO/emB3uQdK/WpvsPJmohXflF0k3rhwPMyuxOxF5YFrxTm5UCRNeJIMUv6ymQ+MZL7umIPJCh2+/5wz7pF9vNv44O8lQAa93bP7TxGbyo+1dha4f1x4MhEUDQ3y3SuoKcDwR4cK+ByFm4pKp54O1Olmvsdvdush+sqevaz+Mz58l7hUys9ZAuNhbjj2DQceLcmpnD57cmTnldoDrIVLcaz8kRY077onlPO/TIYSkTuwymaPc=
+#  - secure: fzBvJCxyqZDN5W3krEdwtvtgC+YP/d/prt4usSk9LMhIF4Bm2Phxqf3WRAN5gnU+Rz4DiRqiyuYOIu1zaqLiNbWvWxHMpadtdRPZ5cAnfOw6Qq8bqg0lxwcuGo+YG3IMgnpnT6Y7edyRUlFywPrdXNxCBDrkZ0blwiFQqWneu0Xyq/LlgHLUrth7lqMyw94/JensOfFT6t6vXsKyHhJR7TLrNEJUCh+1SSIMAchiBURi1q+i1aIIUAD65wKGDYChuKV6DebhMCnU/PUuw6rfiMAiyE05JvYmrDoaeMq8zHVhIPEiQOhSRZR+cEYR2ttdghtpc6e/SA/c2CZSmgx1bBd2eJmbBbADbv0FLb6AkrCqz4K3za4avXYHXl/OPc9B/QTjND+zaxPneXu1ey3kHM7hNIL0NYnfZz4RWeF8QzulN3NWiUab6qyGCvCRnRvik+Ln5KofXDp07SyTsmrlZUVAcuCx45YgnlTdUqkoKtsf0QWRKSTE+YaJeESYhNlCxtnz4wdM8X6HLW0FjBz7EK1FBz9gcS0v+nJx78O5thhqotQXAjL04Tzfcw5yQh8VvPlyievgDQpeoJIwP9eoDAUX/keIwo0GtEt6vDwL8482KiI4f0/9EoDIHu7Nvgsa7IDlgJUCi2n2hBJBOYNO5fDrc4mvq6qx6MVq+46haoo=
+

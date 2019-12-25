@@ -10,6 +10,7 @@ pytest-cov = "*"
 [packages]
 csci_utils = {editable = true,git = 'https://github.com/csci-e-29/2019fa-csci-utils-mathuser0'}
 setuptools_scm = "*"
+luigi = "*"
 
 [requires]
 python_version = "3.7"
