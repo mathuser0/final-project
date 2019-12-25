@@ -13,6 +13,7 @@ install:
 - pipenv install --system --deploy --ignore-pipfile
 
 stages:
+  - test
   - name: answers
     if: branch = master
 
